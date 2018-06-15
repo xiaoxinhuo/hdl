@@ -150,4 +150,12 @@ foreach {k v w} {
 }
 
 ipx::create_xgui_files [ipx::current_core]
+adi_add_bus "link" "master" \
+	"xilinx.com:interface:axis_rtl:1.0" \
+	"xilinx.com:interface:axis:1.0" \
+	[list {"link_ready" "TREADY"} \
+	  {"link_valid" "TVALID"} \
+	  {"link_data" "TDATA"} \
+  ]
+
 ipx::save_core [ipx::current_core]
