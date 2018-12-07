@@ -28,9 +28,9 @@ set_interface_property tx_sync EXPORT_OF ad9172_jesd204.sync
 add_instance axi_ad9172_core ad_ip_jesd204_tpl_dac
 set_instance_parameter_value axi_ad9172_core {NUM_LANES} {8}
 set_instance_parameter_value axi_ad9172_core {NUM_CHANNELS} {2}
-set_instance_parameter_value axi_ad9172_core {CHANNEL_WIDTH} {16}
+set_instance_parameter_value axi_ad9172_core {CONVERTER_RESOLUTION} {16}
 
-add_connection ad9172_jesd204.link_clk axi_ad9172_core.device_clk
+add_connection ad9172_jesd204.link_clk axi_ad9172_core.link_clk
 add_connection axi_ad9172_core.link_data ad9172_jesd204.link_data
 add_connection sys_clk.clk_reset axi_ad9172_core.s_axi_reset
 add_connection sys_clk.clk axi_ad9172_core.s_axi_clock
@@ -70,6 +70,7 @@ set_instance_parameter_value axi_ad9172_dma {CYCLIC} {1}
 set_instance_parameter_value axi_ad9172_dma {DMA_TYPE_DEST} {1}
 set_instance_parameter_value axi_ad9172_dma {DMA_TYPE_SRC} {0}
 set_instance_parameter_value axi_ad9172_dma {FIFO_SIZE} {16}
+set_instance_parameter_value axi_ad9172_dma {USE_TLAST_DEST} {1}
 
 add_connection sys_dma_clk.clk avl_ad9172_fifo.if_dma_clk
 add_connection sys_dma_clk.clk_reset avl_ad9172_fifo.if_dma_rst
