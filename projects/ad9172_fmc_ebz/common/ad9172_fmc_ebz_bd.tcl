@@ -16,7 +16,7 @@ adi_axi_jesd204_tx_create axi_ad9172_jesd 8
 ad_ip_instance ad_ip_jesd204_tpl_dac ad9172_tpl_core
 ad_ip_parameter ad9172_tpl_core CONFIG.NUM_LANES $NUM_OF_LANES
 ad_ip_parameter ad9172_tpl_core CONFIG.NUM_CHANNELS $NUM_OF_CHANNELS
-ad_ip_parameter ad9172_tpl_core CONFIG.CHANNEL_WIDTH $SAMPLE_WIDTH
+ad_ip_parameter ad9172_tpl_core CONFIG.CONVERTER_RESOLUTION $SAMPLE_WIDTH
 
 ad_ip_instance util_upack axi_ad9172_upack
 ad_ip_parameter axi_ad9172_upack CONFIG.CHANNEL_DATA_WIDTH 128
