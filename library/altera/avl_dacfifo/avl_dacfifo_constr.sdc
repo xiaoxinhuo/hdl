@@ -35,3 +35,11 @@ set_false_path  -to [get_registers *avl_dacfifo:*avl_dma_xfer_req_m1*]
 set_false_path  -to [get_registers *avl_dacfifo:*dac_xfer_out_m1*]
 set_false_path  -to [get_registers *avl_dacfifo:*bypass_m1*]
 
+## relax the dac_dma_last_beats to dac_mem_raddr path with +1 cycle
+set_multicycle_path -to [get_registers {*avl_dacfifo_rd:i_rd|dac_mem_raddr[11]}] -hold  1
+set_multicycle_path -to [get_registers {*avl_dacfifo_rd:i_rd|dac_mem_raddr[11]}] -setup 2
+set_multicycle_path -to [get_registers {*avl_dacfifo_rd:i_rd|dac_mem_raddr[10]}] -hold  1
+set_multicycle_path -to [get_registers {*avl_dacfifo_rd:i_rd|dac_mem_raddr[10]}] -setup 2
+set_multicycle_path -to [get_registers {*avl_dacfifo_rd:i_rd|dac_mem_raddr[11]}] -hold  1
+set_multicycle_path -to [get_registers {*avl_dacfifo_rd:i_rd|dac_mem_raddr[11]}] -setup 2
+
