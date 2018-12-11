@@ -498,7 +498,7 @@ module avl_dacfifo_rd #(
       dac_mem_laddr_b <= (!dac_mem_laddr_unf_s) ? dac_mem_laddr_s : dac_mem_laddr_b;
       dac_mem_addr_diff <= dac_mem_addr_diff_s[DAC_MEM_ADDRESS_WIDTH-1:0];
       if (dac_mem_valid) begin
-        if ((dac_dma_last_beats != {MEM_WIDTH_DIFF{1'b1}}) &&
+        if ((dac_dma_last_beats[MEM_WIDTH_DIFF-1:0] != {MEM_WIDTH_DIFF{1'b1}}) &&
             (dac_mem_raddr == (dac_mem_laddr_b + dac_dma_last_beats)) &&
             (dac_mem_laddr_valid == 1'b1)) begin
           dac_mem_raddr <= dac_mem_raddr + (MEM_RATIO - dac_dma_last_beats);
