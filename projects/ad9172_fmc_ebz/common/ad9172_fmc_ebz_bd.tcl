@@ -3,6 +3,7 @@ source $ad_hdl_dir/library/jesd204/scripts/jesd204.tcl
 set NUM_OF_LANES 8
 set NUM_OF_CHANNELS 2
 set SAMPLE_WIDTH 16
+set SAMPLES_PER_FRAME 2
 
 # dac peripherals
 
@@ -17,6 +18,7 @@ ad_ip_instance ad_ip_jesd204_tpl_dac ad9172_tpl_core
 ad_ip_parameter ad9172_tpl_core CONFIG.NUM_LANES $NUM_OF_LANES
 ad_ip_parameter ad9172_tpl_core CONFIG.NUM_CHANNELS $NUM_OF_CHANNELS
 ad_ip_parameter ad9172_tpl_core CONFIG.CONVERTER_RESOLUTION $SAMPLE_WIDTH
+ad_ip_parameter ad9172_tpl_core CONFIG.SAMPLES_PER_FRAME $SAMPLES_PER_FRAME
 
 ad_ip_instance util_upack axi_ad9172_upack
 ad_ip_parameter axi_ad9172_upack CONFIG.CHANNEL_DATA_WIDTH 128
@@ -55,7 +57,7 @@ ad_xcvrpll  axi_ad9172_xcvr/up_pll_rst util_ad9172_xcvr/up_qpll_rst_*
 
 # connections (dac)
 
-ad_xcvrcon  util_ad9172_xcvr axi_ad9172_xcvr axi_ad9172_jesd {1 0 3 2 4 7 5 6}
+ad_xcvrcon  util_ad9172_xcvr axi_ad9172_xcvr axi_ad9172_jesd
 ad_connect  util_ad9172_xcvr/tx_out_clk_0 ad9172_tpl_core/link_clk
 ad_connect  axi_ad9172_jesd/tx_data ad9172_tpl_core/link
 ad_connect  util_ad9172_xcvr/tx_out_clk_0 axi_ad9172_upack/dac_clk
