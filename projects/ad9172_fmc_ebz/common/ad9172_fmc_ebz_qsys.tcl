@@ -37,11 +37,14 @@ add_connection sys_clk.clk axi_ad9172_core.s_axi_clock
 
 # ad9172-unpack
 
-add_instance util_ad9172_upack util_upack
-set_instance_parameter_value util_ad9172_upack {CHANNEL_DATA_WIDTH} {128}
+add_instance util_ad9172_upack util_upack2
 set_instance_parameter_value util_ad9172_upack {NUM_OF_CHANNELS} {2}
+set_instance_parameter_value util_ad9172_upack {SAMPLES_PER_CHANNEL} {8}
+set_instance_parameter_value util_ad9172_upack {SAMPLE_DATA_WIDTH} {16}
+set_instance_parameter_value util_ad9172_upack {INTERFACE_TYPE} {1}
 
-add_connection ad9172_jesd204.link_clk util_ad9172_upack.if_dac_clk
+add_connection ad9172_jesd204.link_clk util_ad9172_upack.clk
+add_connection ad9172_jesd204.link_reset util_ad9172_upack.reset
 add_connection axi_ad9172_core.dac_ch_0 util_ad9172_upack.dac_ch_0
 add_connection axi_ad9172_core.dac_ch_1 util_ad9172_upack.dac_ch_1
 
@@ -52,8 +55,8 @@ set_interface_property tx_fifo_bypass EXPORT_OF avl_ad9172_fifo.if_bypass
 
 add_connection ad9172_jesd204.link_clk avl_ad9172_fifo.if_dac_clk
 add_connection ad9172_jesd204.link_reset avl_ad9172_fifo.if_dac_rst
-add_connection util_ad9172_upack.if_dac_valid avl_ad9172_fifo.if_dac_valid
-add_connection avl_ad9172_fifo.if_dac_data util_ad9172_upack.if_dac_data
+add_connection util_ad9172_upack.if_packed_fifo_rd_en avl_ad9172_fifo.if_dac_valid
+add_connection avl_ad9172_fifo.if_dac_data util_ad9172_upack.if_packed_fifo_rd_data
 add_connection avl_ad9172_fifo.if_dac_dunf axi_ad9172_core.if_dac_dunf
 
 # ad9172-dma

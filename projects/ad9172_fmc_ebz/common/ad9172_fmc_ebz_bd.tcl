@@ -20,9 +20,10 @@ ad_ip_parameter ad9172_tpl_core CONFIG.NUM_CHANNELS $NUM_OF_CHANNELS
 ad_ip_parameter ad9172_tpl_core CONFIG.CONVERTER_RESOLUTION $SAMPLE_WIDTH
 ad_ip_parameter ad9172_tpl_core CONFIG.SAMPLES_PER_FRAME $SAMPLES_PER_FRAME
 
-ad_ip_instance util_upack axi_ad9172_upack
-ad_ip_parameter axi_ad9172_upack CONFIG.CHANNEL_DATA_WIDTH 128
+ad_ip_instance util_upack2 axi_ad9172_upack
 ad_ip_parameter axi_ad9172_upack CONFIG.NUM_OF_CHANNELS $NUM_OF_CHANNELS
+ad_ip_parameter axi_ad9172_upack CONFIG.SAMPLES_PER_CHANNEL 8
+ad_ip_parameter axi_ad9172_upack CONFIG.SAMPLE_DATA_WIDTH 16
 
 ad_ip_instance axi_dmac axi_ad9172_dma
 ad_ip_parameter axi_ad9172_dma CONFIG.DMA_DATA_WIDTH_SRC 128
@@ -60,7 +61,8 @@ ad_xcvrpll  axi_ad9172_xcvr/up_pll_rst util_ad9172_xcvr/up_qpll_rst_*
 ad_xcvrcon  util_ad9172_xcvr axi_ad9172_xcvr axi_ad9172_jesd
 ad_connect  util_ad9172_xcvr/tx_out_clk_0 ad9172_tpl_core/link_clk
 ad_connect  axi_ad9172_jesd/tx_data ad9172_tpl_core/link
-ad_connect  util_ad9172_xcvr/tx_out_clk_0 axi_ad9172_upack/dac_clk
+ad_connect  util_ad9172_xcvr/tx_out_clk_0 axi_ad9172_upack/clk
+ad_connect  axi_ad9172_jesd_rstgen/peripheral_reset axi_ad9172_upack/reset
 
 ad_ip_instance xlconcat ad9172_data_concat
 ad_ip_parameter ad9172_data_concat CONFIG.NUM_PORTS $NUM_OF_CHANNELS
@@ -79,17 +81,19 @@ for {set i 0} {$i < $NUM_OF_CHANNELS} {incr i} {
   ad_connect ad9172_tpl_core/enable ad9172_enable_slice_$i/Din
   ad_connect ad9172_tpl_core/dac_valid ad9172_valid_slice_$i/Din
 
-  ad_connect ad9172_enable_slice_$i/Dout axi_ad9172_upack/dac_enable_$i
-  ad_connect ad9172_valid_slice_$i/Dout axi_ad9172_upack/dac_valid_$i
-  ad_connect axi_ad9172_upack/dac_data_$i ad9172_data_concat/In$i
+  ad_connect ad9172_enable_slice_$i/Dout axi_ad9172_upack/enable_$i
+  ad_connect axi_ad9172_upack/fifo_rd_data_$i ad9172_data_concat/In$i
 
 }
 ad_connect ad9172_tpl_core/dac_ddata ad9172_data_concat/dout
+ad_connect ad9172_valid_slice_0/Dout axi_ad9172_upack/fifo_rd_en
 
 ad_connect  util_ad9172_xcvr/tx_out_clk_0 axi_ad9172_fifo/dac_clk
 ad_connect  axi_ad9172_jesd_rstgen/peripheral_reset axi_ad9172_fifo/dac_rst
-ad_connect  axi_ad9172_upack/dac_valid axi_ad9172_fifo/dac_valid
-ad_connect  axi_ad9172_upack/dac_data axi_ad9172_fifo/dac_data
+# TODO: Add streaming AXI interface for DAC FIFO
+ad_connect  axi_ad9172_upack/s_axis_valid  VCC
+ad_connect  axi_ad9172_upack/s_axis_ready axi_ad9172_fifo/dac_valid
+ad_connect  axi_ad9172_upack/s_axis_data axi_ad9172_fifo/dac_data
 ad_connect  ad9172_tpl_core/dac_dunf axi_ad9172_fifo/dac_dunf
 ad_connect  sys_cpu_clk axi_ad9172_fifo/dma_clk
 ad_connect  sys_cpu_reset axi_ad9172_fifo/dma_rst
@@ -105,7 +109,7 @@ ad_connect  axi_ad9172_fifo/dma_xfer_last axi_ad9172_dma/m_axis_last
 # interconnect (cpu)
 
 ad_cpu_interconnect 0x44A60000 axi_ad9172_xcvr
-ad_cpu_interconnect 0x44A00000 ad9172_tpl_core
+ad_cpu_interconnect 0x44A04000 ad9172_tpl_core
 ad_cpu_interconnect 0x44A90000 axi_ad9172_jesd
 ad_cpu_interconnect 0x7c420000 axi_ad9172_dma
 
