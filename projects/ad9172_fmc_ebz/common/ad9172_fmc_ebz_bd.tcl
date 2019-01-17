@@ -1,9 +1,12 @@
 source $ad_hdl_dir/library/jesd204/scripts/jesd204.tcl
 
-set NUM_OF_LANES 8
-set NUM_OF_CHANNELS 2
-set SAMPLE_WIDTH 16
-set SAMPLES_PER_FRAME 2
+set NUM_OF_LANES 4      ; # L
+set NUM_OF_CHANNELS 4   ; # M 
+set SAMPLE_WIDTH 16     ; # N/NP
+set SAMPLES_PER_FRAME 1 ; # S
+
+set DAC_DATA_WIDTH [expr $NUM_OF_LANES * 32]
+set SAMPLES_PER_CHANNEL [expr $DAC_DATA_WIDTH / $NUM_OF_CHANNELS / $SAMPLE_WIDTH]
 
 # dac peripherals
 
@@ -12,7 +15,7 @@ ad_ip_parameter axi_ad9172_xcvr CONFIG.NUM_OF_LANES $NUM_OF_LANES
 ad_ip_parameter axi_ad9172_xcvr CONFIG.QPLL_ENABLE 1
 ad_ip_parameter axi_ad9172_xcvr CONFIG.TX_OR_RX_N 1
 
-adi_axi_jesd204_tx_create axi_ad9172_jesd 8
+adi_axi_jesd204_tx_create axi_ad9172_jesd $NUM_OF_LANES
 
 ad_ip_instance ad_ip_jesd204_tpl_dac ad9172_tpl_core
 ad_ip_parameter ad9172_tpl_core CONFIG.NUM_LANES $NUM_OF_LANES
@@ -22,12 +25,12 @@ ad_ip_parameter ad9172_tpl_core CONFIG.SAMPLES_PER_FRAME $SAMPLES_PER_FRAME
 
 ad_ip_instance util_upack2 axi_ad9172_upack
 ad_ip_parameter axi_ad9172_upack CONFIG.NUM_OF_CHANNELS $NUM_OF_CHANNELS
-ad_ip_parameter axi_ad9172_upack CONFIG.SAMPLES_PER_CHANNEL 8
-ad_ip_parameter axi_ad9172_upack CONFIG.SAMPLE_DATA_WIDTH 16
+ad_ip_parameter axi_ad9172_upack CONFIG.SAMPLES_PER_CHANNEL $SAMPLES_PER_CHANNEL
+ad_ip_parameter axi_ad9172_upack CONFIG.SAMPLE_DATA_WIDTH $SAMPLE_WIDTH
 
 ad_ip_instance axi_dmac axi_ad9172_dma
 ad_ip_parameter axi_ad9172_dma CONFIG.DMA_DATA_WIDTH_SRC 128
-ad_ip_parameter axi_ad9172_dma CONFIG.DMA_DATA_WIDTH_DEST 256
+ad_ip_parameter axi_ad9172_dma CONFIG.DMA_DATA_WIDTH_DEST $dac_dma_data_width
 ad_ip_parameter axi_ad9172_dma CONFIG.DMA_2D_TRANSFER 0
 ad_ip_parameter axi_ad9172_dma CONFIG.DMA_LENGTH_WIDTH 24
 ad_ip_parameter axi_ad9172_dma CONFIG.AXI_SLICE_DEST 0
@@ -43,7 +46,7 @@ ad_ip_parameter axi_ad9172_dma CONFIG.FIFO_SIZE 16
 ad_ip_instance util_adxcvr util_ad9172_xcvr
 ad_ip_parameter util_ad9172_xcvr CONFIG.RX_NUM_OF_LANES 0
 ad_ip_parameter util_ad9172_xcvr CONFIG.TX_NUM_OF_LANES $NUM_OF_LANES
-ad_ip_parameter util_ad9172_xcvr CONFIG.TX_LANE_INVERT 15
+ad_ip_parameter util_ad9172_xcvr CONFIG.TX_LANE_INVERT [expr 0x0F]
 
 ad_connect  sys_cpu_resetn util_ad9172_xcvr/up_rstn
 ad_connect  sys_cpu_clk util_ad9172_xcvr/up_clk

@@ -1,8 +1,8 @@
 
 set dac_fifo_name axi_ad9172_fifo
 set dac_fifo_address_width 13
-set dac_data_width 256
-set dac_dma_data_width 256
+set dac_data_width 128    ; # should be 32*L (number of TX lanes)
+set dac_dma_data_width 128
 
 source $ad_hdl_dir/projects/common/zcu102/zcu102_system_bd.tcl
 source $ad_hdl_dir/projects/common/xilinx/dacfifo_bd.tcl

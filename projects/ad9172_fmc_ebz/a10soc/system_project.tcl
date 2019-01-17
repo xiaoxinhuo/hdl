@@ -36,14 +36,14 @@ set_location_assignment PIN_L37   -to tx_serial_data[2]     ; ## A26  FMCA_HPC_D
 set_location_assignment PIN_L36   -to "tx_serial_data[2](n)"; ## A27  FMCA_HPC_DP2_C2M_N
 set_location_assignment PIN_K39   -to tx_serial_data[3]     ; ## A30  FMCA_HPC_DP3_C2M_P
 set_location_assignment PIN_K38   -to "tx_serial_data[3](n)"; ## A31  FMCA_HPC_DP3_C2M_N
-set_location_assignment PIN_J37   -to tx_serial_data[4]     ; ## A34  FMCA_HPC_DP4_C2M_P
-set_location_assignment PIN_J36   -to "tx_serial_data[4](n)"; ## A35  FMCA_HPC_DP4_C2M_N
-set_location_assignment PIN_H39   -to tx_serial_data[5]     ; ## A38  FMCA_HPC_DP5_C2M_P
-set_location_assignment PIN_H38   -to "tx_serial_data[5](n)"; ## A39  FMCA_HPC_DP5_C2M_N
-set_location_assignment PIN_G37   -to tx_serial_data[6]     ; ## B36  FMCA_HPC_DP6_C2M_P
-set_location_assignment PIN_G36   -to "tx_serial_data[6](n)"; ## B37  FMCA_HPC_DP6_C2M_N
-set_location_assignment PIN_F39   -to tx_serial_data[7]     ; ## B32  FMCA_HPC_DP7_C2M_P
-set_location_assignment PIN_F38   -to "tx_serial_data[7](n)"; ## B33  FMCA_HPC_DP7_C2M_N
+#set_location_assignment PIN_J37   -to tx_serial_data[4]     ; ## A34  FMCA_HPC_DP4_C2M_P
+#set_location_assignment PIN_J36   -to "tx_serial_data[4](n)"; ## A35  FMCA_HPC_DP4_C2M_N
+#set_location_assignment PIN_H39   -to tx_serial_data[5]     ; ## A38  FMCA_HPC_DP5_C2M_P
+#set_location_assignment PIN_H38   -to "tx_serial_data[5](n)"; ## A39  FMCA_HPC_DP5_C2M_N
+#set_location_assignment PIN_G37   -to tx_serial_data[6]     ; ## B36  FMCA_HPC_DP6_C2M_P
+#set_location_assignment PIN_G36   -to "tx_serial_data[6](n)"; ## B37  FMCA_HPC_DP6_C2M_N
+#set_location_assignment PIN_F39   -to tx_serial_data[7]     ; ## B32  FMCA_HPC_DP7_C2M_P
+#set_location_assignment PIN_F38   -to "tx_serial_data[7](n)"; ## B33  FMCA_HPC_DP7_C2M_N
 
 set_location_assignment PIN_E12   -to tx_sync               ; ## D08  FMCA_HPC_LA01_P
 set_location_assignment PIN_E13   -to "tx_sync(n)"          ; ## D09  FMCA_HPC_LA01_N

@@ -1,15 +1,23 @@
+set NUM_OF_LANES 4      ; # L
+set NUM_OF_CHANNELS 4   ; # M 
+set SAMPLE_WIDTH 16     ; # N/NP
+set SAMPLES_PER_FRAME 1 ; # S
+
+set DAC_DATA_WIDTH [expr $NUM_OF_LANES * 32]
+set SAMPLES_PER_CHANNEL [expr $DAC_DATA_WIDTH / $NUM_OF_CHANNELS / $SAMPLE_WIDTH]
+
 
 # ad9172-xcvr
 
 add_instance ad9172_jesd204 adi_jesd204
 set_instance_parameter_value ad9172_jesd204 {ID} {0}
 set_instance_parameter_value ad9172_jesd204 {TX_OR_RX_N} {1}
-set_instance_parameter_value ad9172_jesd204 {NUM_OF_LANES} {8}
+set_instance_parameter_value ad9172_jesd204 {NUM_OF_LANES} $NUM_OF_LANES
 set_instance_parameter_value ad9172_jesd204 {LANE_RATE} {14200}
 set_instance_parameter_value ad9172_jesd204 {REFCLK_FREQUENCY} {355}
 set_instance_parameter_value ad9172_jesd204 {SOFT_PCS} {true}
-set_instance_parameter_value ad9172_jesd204 {LANE_MAP} {7 6 5 4 2 0 1 3}
-set_instance_parameter_value ad9172_jesd204 {LANE_INVERT} 0xf0
+#set_instance_parameter_value ad9172_jesd204 {LANE_MAP} {7 6 5 4 2 0 1 3}
+#set_instance_parameter_value ad9172_jesd204 {LANE_INVERT} 0xf0
 
 
 add_connection sys_clk.clk ad9172_jesd204.sys_clk
@@ -26,9 +34,9 @@ set_interface_property tx_sync EXPORT_OF ad9172_jesd204.sync
 # ad9172-core
 
 add_instance axi_ad9172_core ad_ip_jesd204_tpl_dac
-set_instance_parameter_value axi_ad9172_core {NUM_LANES} {8}
-set_instance_parameter_value axi_ad9172_core {NUM_CHANNELS} {2}
-set_instance_parameter_value axi_ad9172_core {CONVERTER_RESOLUTION} {16}
+set_instance_parameter_value axi_ad9172_core {NUM_LANES} $NUM_OF_LANES
+set_instance_parameter_value axi_ad9172_core {NUM_CHANNELS} $NUM_OF_CHANNELS
+set_instance_parameter_value axi_ad9172_core {CONVERTER_RESOLUTION} $SAMPLE_WIDTH
 
 add_connection ad9172_jesd204.link_clk axi_ad9172_core.link_clk
 add_connection axi_ad9172_core.link_data ad9172_jesd204.link_data
@@ -38,9 +46,9 @@ add_connection sys_clk.clk axi_ad9172_core.s_axi_clock
 # ad9172-unpack
 
 add_instance util_ad9172_upack util_upack2
-set_instance_parameter_value util_ad9172_upack {NUM_OF_CHANNELS} {2}
-set_instance_parameter_value util_ad9172_upack {SAMPLES_PER_CHANNEL} {8}
-set_instance_parameter_value util_ad9172_upack {SAMPLE_DATA_WIDTH} {16}
+set_instance_parameter_value util_ad9172_upack {NUM_OF_CHANNELS} $NUM_OF_CHANNELS
+set_instance_parameter_value util_ad9172_upack {SAMPLES_PER_CHANNEL} $SAMPLES_PER_CHANNEL
+set_instance_parameter_value util_ad9172_upack {SAMPLE_DATA_WIDTH} $SAMPLE_WIDTH
 set_instance_parameter_value util_ad9172_upack {INTERFACE_TYPE} {1}
 
 add_connection ad9172_jesd204.link_clk util_ad9172_upack.clk
@@ -63,7 +71,7 @@ add_connection avl_ad9172_fifo.if_dac_dunf axi_ad9172_core.if_dac_dunf
 
 add_instance axi_ad9172_dma axi_dmac
 set_instance_parameter_value axi_ad9172_dma {DMA_DATA_WIDTH_SRC} {128}
-set_instance_parameter_value axi_ad9172_dma {DMA_DATA_WIDTH_DEST} {128}
+set_instance_parameter_value axi_ad9172_dma {DMA_DATA_WIDTH_DEST} $dac_dma_data_width
 set_instance_parameter_value axi_ad9172_dma {DMA_2D_TRANSFER} {0}
 set_instance_parameter_value axi_ad9172_dma {DMA_LENGTH_WIDTH} {24}
 set_instance_parameter_value axi_ad9172_dma {AXI_SLICE_DEST} {0}
@@ -94,7 +102,7 @@ ad_cpu_interconnect 0x00020000 ad9172_jesd204.link_reconfig
 ad_cpu_interconnect 0x00024000 ad9172_jesd204.link_management
 ad_cpu_interconnect 0x00025000 ad9172_jesd204.link_pll_reconfig
 ad_cpu_interconnect 0x00026000 ad9172_jesd204.lane_pll_reconfig
-for {set i 0} {$i < 8} {incr i} {
+for {set i 0} {$i < $NUM_OF_LANES} {incr i} {
   ad_cpu_interconnect [expr 0x00028000 + $i * 0x1000] ad9172_jesd204.phy_reconfig_${i}
 }
 ad_cpu_interconnect 0x00030000 axi_ad9172_core.s_axi

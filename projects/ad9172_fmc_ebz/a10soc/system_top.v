@@ -133,7 +133,7 @@ module system_top (
 //  input             tx_ref_clk1, -- DNI on the board
   input             tx_sysref,
   input             tx_sync,
-  output  [ 7:0]    tx_serial_data,
+  output  [ 3:0]    tx_serial_data,
 
   // gpio
   output            txen_0,
