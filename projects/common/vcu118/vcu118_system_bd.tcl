@@ -86,15 +86,15 @@ ad_ip_parameter axi_ethernet_0 CONFIG.DIFFCLK_BOARD_INTERFACE sgmii_phyclk
 ad_ip_parameter axi_ethernet_0 CONFIG.ETHERNET_BOARD_INTERFACE sgmii_lvds
 ad_ip_parameter axi_ethernet_0 CONFIG.MDIO_BOARD_INTERFACE mdio_mdc
 ad_ip_parameter axi_ethernet_0 CONFIG.PHYRST_BOARD_INTERFACE phy_reset_out
+ad_ip_parameter axi_ethernet_0 CONFIG.TXCSUM Full
+ad_ip_parameter axi_ethernet_0 CONFIG.RXCSUM Full
+ad_ip_parameter axi_ethernet_0 CONFIG.TXMEM 8k
+ad_ip_parameter axi_ethernet_0 CONFIG.RXMEM 8k
 
-ad_ip_instance axi_fifo_mm_s axi_ethernet_0_fifo
-ad_ip_parameter axi_ethernet_0_fifo CONFIG.C_HAS_AXIS_TKEEP true
-ad_ip_parameter axi_ethernet_0_fifo CONFIG.C_RX_FIFO_DEPTH 4096
-ad_ip_parameter axi_ethernet_0_fifo CONFIG.C_RX_FIFO_PE_THRESHOLD 10
-ad_ip_parameter axi_ethernet_0_fifo CONFIG.C_RX_FIFO_PF_THRESHOLD 4000
-ad_ip_parameter axi_ethernet_0_fifo CONFIG.C_TX_FIFO_DEPTH 4096
-ad_ip_parameter axi_ethernet_0_fifo CONFIG.C_TX_FIFO_PE_THRESHOLD 10
-ad_ip_parameter axi_ethernet_0_fifo CONFIG.C_TX_FIFO_PF_THRESHOLD 4000
+ad_ip_instance axi_dma axi_ethernet_dma
+ad_ip_parameter axi_ethernet_dma CONFIG.c_include_mm2s_dre 1
+ad_ip_parameter axi_ethernet_dma CONFIG.c_sg_use_stsapp_length 1
+ad_ip_parameter axi_ethernet_dma CONFIG.c_include_s2mm_dre 1
 
 ad_ip_instance axi_iic axi_iic_main
 
@@ -170,13 +170,14 @@ ad_connect mdio axi_ethernet_0/mdio
 ad_connect phy_sd axi_ethernet_0/signal_detect
 ad_connect phy_rst_n axi_ethernet_0/phy_rst_n
 ad_connect sys_cpu_clk axi_ethernet_0/axis_clk
-ad_connect axi_ethernet_0/s_axis_txc axi_ethernet_0_fifo/AXI_STR_TXC
-ad_connect axi_ethernet_0/s_axis_txd axi_ethernet_0_fifo/AXI_STR_TXD
-ad_connect axi_ethernet_0/m_axis_rxd axi_ethernet_0_fifo/AXI_STR_RXD
-ad_connect axi_ethernet_0/axi_txc_arstn axi_ethernet_0_fifo/mm2s_cntrl_reset_out_n
-ad_connect axi_ethernet_0/axi_txd_arstn axi_ethernet_0_fifo/mm2s_prmry_reset_out_n
-ad_connect axi_ethernet_0/axi_rxs_arstn axi_ethernet_0_fifo/s2mm_prmry_reset_out_n
-ad_connect axi_ethernet_0/axi_rxd_arstn axi_ethernet_0_fifo/s2mm_prmry_reset_out_n
+ad_connect  axi_ethernet_0/s_axis_txd axi_ethernet_dma/M_AXIS_MM2S
+ad_connect  axi_ethernet_0/s_axis_txc axi_ethernet_dma/M_AXIS_CNTRL
+ad_connect  axi_ethernet_0/m_axis_rxd axi_ethernet_dma/S_AXIS_S2MM
+ad_connect  axi_ethernet_0/m_axis_rxs axi_ethernet_dma/S_AXIS_STS
+ad_connect  axi_ethernet_0/axi_txd_arstn axi_ethernet_dma/mm2s_prmry_reset_out_n
+ad_connect  axi_ethernet_0/axi_txc_arstn axi_ethernet_dma/mm2s_cntrl_reset_out_n
+ad_connect  axi_ethernet_0/axi_rxd_arstn axi_ethernet_dma/s2mm_prmry_reset_out_n
+ad_connect  axi_ethernet_0/axi_rxs_arstn axi_ethernet_dma/s2mm_sts_reset_out_n
 
 # iic, spi and gpio
 
@@ -202,8 +203,8 @@ ad_connect sys_cpu_clk axi_spi/ext_spi_clk
 
 ad_connect sys_concat_intc/In0    axi_timer/interrupt
 ad_connect sys_concat_intc/In1    axi_ethernet_0/interrupt
-ad_connect sys_concat_intc/In2    axi_ethernet_0_fifo/interrupt
-ad_connect sys_concat_intc/In3    axi_ethernet_0/mac_irq
+ad_connect sys_concat_intc/In2    axi_ethernet_dma/mm2s_introut
+ad_connect sys_concat_intc/In3    axi_ethernet_dma/s2mm_introut
 ad_connect sys_concat_intc/In4    axi_uart/interrupt
 ad_connect sys_concat_intc/In5    GND
 ad_connect sys_concat_intc/In6    GND
@@ -220,7 +221,7 @@ ad_connect sys_concat_intc/In15   GND
 # interconnect - processor
 
 ad_cpu_interconnect 0x40C00000 axi_ethernet_0
-ad_cpu_interconnect 0x44A00000 axi_ethernet_0_fifo
+ad_cpu_interconnect 0x41E10000 axi_ethernet_dma
 ad_cpu_interconnect 0x40000000 axi_gpio
 ad_cpu_interconnect 0x40600000 axi_uart
 ad_cpu_interconnect 0x41200000 axi_intc
@@ -234,6 +235,9 @@ ad_cpu_interconnect 0x41400000 sys_mb_debug
 ad_mem_hp0_interconnect sys_mem_clk axi_ddr_cntrl/C0_DDR4_S_AXI
 ad_mem_hp0_interconnect sys_cpu_clk sys_mb/M_AXI_DC
 ad_mem_hp0_interconnect sys_cpu_clk sys_mb/M_AXI_IC
+ad_mem_hp0_interconnect sys_cpu_clk axi_ethernet_dma/M_AXI_SG
+ad_mem_hp0_interconnect sys_cpu_clk axi_ethernet_dma/M_AXI_MM2S
+ad_mem_hp0_interconnect sys_cpu_clk axi_ethernet_dma/M_AXI_S2MM
 
 ad_disconnect sys_mem_clk axi_mem_interconnect/ACLK
 ad_disconnect sys_mem_resetn axi_mem_interconnect/ARESETN
