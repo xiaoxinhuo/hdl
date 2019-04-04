@@ -7,11 +7,14 @@ variable sys_hp1_interconnect_index
 variable sys_hp2_interconnect_index
 variable sys_hp3_interconnect_index
 variable sys_mem_interconnect_index
+variable sys_mem_clk_index
 
 variable xcvr_index
 variable xcvr_tx_index
 variable xcvr_rx_index
 variable xcvr_instance
+
+variable sys_mem_clk_list
 
 ###################################################################################################
 ###################################################################################################
@@ -22,6 +25,7 @@ set sys_hp1_interconnect_index -1
 set sys_hp2_interconnect_index -1
 set sys_hp3_interconnect_index -1
 set sys_mem_interconnect_index -1
+set sys_mem_clk_index 0
 
 set xcvr_index -1
 set xcvr_tx_index 0
@@ -389,6 +393,8 @@ proc ad_mem_hpx_interconnect {p_sel p_clk p_name} {
   global sys_hp2_interconnect_index
   global sys_hp3_interconnect_index
   global sys_mem_interconnect_index
+  global sys_mem_clk_list
+  global sys_mem_clk_index
 
   set p_name_int $p_name
   set p_clk_source [get_bd_pins -filter {DIR == O} -of_objects [get_bd_nets $p_clk]]
@@ -515,29 +521,27 @@ proc ad_mem_hpx_interconnect {p_sel p_clk p_name} {
   if {$m_interconnect_index == 0} {
     set_property CONFIG.NUM_MI 1 $m_interconnect_cell
     set_property CONFIG.NUM_SI 1 $m_interconnect_cell
-    set_property CONFIG.NUM_CLKS 2 $m_interconnect_cell
     ad_connect $p_rst $m_interconnect_cell/ARESETN
     ad_connect $p_clk $m_interconnect_cell/ACLK
-#    ad_connect $p_rst $m_interconnect_cell/M00_ARESETN
-#    ad_connect $p_clk $m_interconnect_cell/M00_ACLK
     ad_connect $m_interconnect_cell/M00_AXI $p_name_int
+    lappend sys_mem_clk_list $p_clk
     if {$p_intf_clock ne ""} {
       ad_connect $p_clk $p_intf_clock
     }
   } else {
     set_property CONFIG.NUM_SI $m_interconnect_index $m_interconnect_cell
-    set_property CONFIG.NUM_CLKS [expr $m_interconnect_index +1] $m_interconnect_cell
-    ad_connect $p_clk $m_interconnect_cell/ACLK[expr $m_interconnect_index]
+    if { [lsearch $sys_mem_clk_list $p_clk] == -1} {
+        lappend sys_mem_clk_list $p_clk
+        set sys_mem_clk_index [expr $sys_mem_clk_index + 1]
+        set_property CONFIG.NUM_CLKS [expr $sys_mem_clk_index +1] $m_interconnect_cell
+        ad_connect $p_clk $m_interconnect_cell/ACLK[expr $sys_mem_clk_index]
+    }
     ad_connect $m_interconnect_cell/${i_str}_AXI $p_name_int
     if {$p_intf_clock ne ""} {
       ad_connect $p_clk $p_intf_clock
     }
     assign_bd_address $m_addr_seg
   }
-
-#  if {$m_interconnect_index > 1} {
-#    set_property CONFIG.STRATEGY {2} $m_interconnect_cell
-#  }
 
   if {$p_sel eq "MEM"} {set sys_mem_interconnect_index $m_interconnect_index}
   if {$p_sel eq "HP0"} {set sys_hp0_interconnect_index $m_interconnect_index}
