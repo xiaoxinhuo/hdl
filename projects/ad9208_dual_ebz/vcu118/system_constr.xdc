@@ -2,8 +2,8 @@
 ## dual_ad9208
 #
 
-set_property  -dict {PACKAGE_PIN AH38} [get_ports  rx_ref_clk_0_p]                                            ; ##   GBTCLK0_M2C_P  MGTREFCLK1P_121
-set_property  -dict {PACKAGE_PIN AH39} [get_ports  rx_ref_clk_0_n]                                            ; ##   GBTCLK0_M2C_N  MGTREFCLK1N_121
+set_property  -dict {PACKAGE_PIN AK38} [get_ports  rx_ref_clk_0_p]                                            ; ##   GBTCLK0_M2C_P  MGTREFCLK0P_121
+set_property  -dict {PACKAGE_PIN AK39} [get_ports  rx_ref_clk_0_n]                                            ; ##   GBTCLK0_M2C_N  MGTREFCLK0N_121
 #  GTREFCLK1                                                                                                                   FMCp_PORT      FPGA_IO
 set_property  -dict {PACKAGE_PIN AR45} [get_ports  rx_data_p[0]]                                              ; ##   DP0_M2C_P      MGTYRXP0_121
 set_property  -dict {PACKAGE_PIN AR46} [get_ports  rx_data_n[0]]                                              ; ##   DP0_M2C_N      MGTYRXN0_121

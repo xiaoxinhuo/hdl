@@ -36,8 +36,8 @@
 `timescale 1ns/100ps
 
 //  EBZ_signal                FMCp_PORT      FMCp_PIN  FPGA_PIN  FPGA_PORT       FPGA_IO
-//  FMC_GBTCLK0_M2C_P         GBTCLK0_M2C_P  D4        AH38      rx_ref_clk_0_p  MGTREFCLK1P_121
-//  FMC_GBTCLK0_M2C_N         GBTCLK0_M2C_N  D5        AH39      rx_ref_clk_0_n  MGTREFCLK1N_121
+//  FMC_GBTCLK0_M2C_P         GBTCLK0_M2C_P  D4        AK38      rx_ref_clk_0_p  MGTREFCLK0P_121
+//  FMC_GBTCLK0_M2C_N         GBTCLK0_M2C_N  D5        AK39      rx_ref_clk_0_n  MGTREFCLK0N_121
 //  FMC_DP0_M2C_P             DP0_M2C_P      C6        AR45      rx_data_p[0]    MGTYRXP0_121
 //  FMC_DP0_M2C_N             DP0_M2C_N      C7        AR46      rx_data_n[0]    MGTYRXN0_121
 //  FMC_DP1_M2C_P             DP1_M2C_P      A2        AN45      rx_data_p[1]    MGTYRXP1_121
