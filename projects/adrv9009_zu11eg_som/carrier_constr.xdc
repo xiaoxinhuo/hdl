@@ -1,6 +1,6 @@
 
 set_property -dict {PACKAGE_PIN  AT13 IOSTANDARD LVCMOS18} [get_ports fan_tach]
-set_property -dict {PACKAGE_PIN  AR13 IOSTANDARD LVCMOS18} [get_ports fan_pwrm]
+set_property -dict {PACKAGE_PIN  AR13 IOSTANDARD LVCMOS18} [get_ports fan_pwm]
 set_property -dict {PACKAGE_PIN  AR12 IOSTANDARD LVCMOS18} [get_ports i2s_sdata_in]
 set_property -dict {PACKAGE_PIN  AP12 IOSTANDARD LVCMOS18} [get_ports i2s_sdata_out]
 set_property -dict {PACKAGE_PIN  AP15 IOSTANDARD LVCMOS18} [get_ports i2s_mclk]

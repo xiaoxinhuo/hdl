@@ -37,8 +37,8 @@
 
 module system_top (
 
-  output              fan_tach,
-  output              fan_pwrm,
+  input               fan_tach,
+  output              fan_pwm,
   input               i2s_sdata_in,
   output              i2s_sdata_out,
   output              i2s_mclk,
@@ -356,7 +356,7 @@ module system_top (
   ad_iobuf #(.DATA_WIDTH(28)) i_carrier_iobuf (
     .dio_t ({gpio_t[27:0]}),
     .dio_i ({gpio_o[27:0]}),
-    .dio_o ({gpio_i[27:0]}),
+    .dio_o ({gpio_i[27:22], gpio_i[19:0]}),
     .dio_p ({
               hmc7044_car_gpio_3, // 27
               hmc7044_car_gpio_2, // 26
@@ -364,8 +364,8 @@ module system_top (
               hmc7044_car_gpio_0, // 24
               hmc7044_car_reset,  // 23
               resetb_ad9545,      // 22
-              fan_tach,           // 21
-              fan_pwrm,           // 20
+//              fan_tach,           // 21
+//              fan_pwm,           // 20
               pmod0_d7,           // 19
               pmod0_d6,           // 18
               pmod0_d5,           // 17
@@ -534,6 +534,8 @@ module system_top (
     .tx_sync_0 (tx_sync),
     .tx_sysref_0 (sysref_a),
     .dac_fifo_bypass(gpio_o[90]),
+    .axi_fan_pwm_o(fan_pwm),
+    .axi_fan_tacho_i(fan_tach),
     .spi0_csn(spi_csn),
     .spi0_miso(spi0_miso),
     .spi0_mosi(spi_mosi),
