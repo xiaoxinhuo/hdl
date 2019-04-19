@@ -42,7 +42,8 @@ module util_adcfifo #(
   parameter   DMA_DATA_WIDTH =  64,
   parameter   DMA_READY_ENABLE = 1,
   parameter   DMA_ADDRESS_WIDTH =  10,
-  parameter   SYNCED_CAPTURE_ENABLE = 0) (
+  parameter   SYNCED_CAPTURE_ENABLE = 0,
+  parameter   CAPTURE_TILL_FULL = 0) (
 
   // fifo interface
 
@@ -93,6 +94,7 @@ module util_adcfifo #(
   reg                                   dma_rd_d = 'd0;
   reg         [DMA_DATA_WIDTH-1:0]      dma_rdata_d = 'd0;
   reg         [DMA_ADDRESS_WIDTH-1:0]   dma_raddr = 'd0;
+  reg         [ 2:0]                    dma_end_of_capture_m = 'd0;
 
   // internal signals
 
@@ -103,6 +105,7 @@ module util_adcfifo #(
   wire                                  dma_rd_s;
   wire        [DMA_DATA_WIDTH-1:0]      dma_rdata_s;
   wire                                  adc_capture_start_s;
+  wire                                  adc_end_of_capture_s;
 
   // write interface
 
@@ -138,6 +141,7 @@ module util_adcfifo #(
         adc_xfer_init <= adc_capture_start_s;
       end
     end
+
   end else begin : async_capture
     always @(posedge adc_clk) begin
       if (adc_rst_s == 1'b1) begin
@@ -148,6 +152,19 @@ module util_adcfifo #(
         adc_xfer_init <= adc_xfer_req_m[1] & ~adc_xfer_req_m[2];
       end
     end
+
+  end
+  endgenerate
+
+  generate
+  if (CAPTURE_TILL_FULL) begin : capture_till_full
+
+    assign adc_end_of_capture_s = (adc_waddr_int == ADC_ADDR_LIMIT);
+
+  end else begin : capture_till_next_transfer
+
+    assign adc_end_of_capture_s = (adc_waddr_int == ADC_ADDR_LIMIT) ||
+                                  (adc_xfer_req_m[2] == 1'b0);
   end
   endgenerate
 
@@ -157,8 +174,7 @@ module util_adcfifo #(
     end else begin
       if (adc_xfer_init == 1'b1) begin
         adc_xfer_enable <= 1'b1;
-      end else if ((adc_waddr_int >= ADC_ADDR_LIMIT - 1) ||
-        (adc_xfer_req_m[2] == 1'b0)) begin
+      end else if (adc_end_of_capture_s == 1'b1) begin
         adc_xfer_enable <= 1'b0;
       end
     end
@@ -218,6 +234,7 @@ module util_adcfifo #(
 
   always @(posedge dma_clk) begin
     dma_waddr_rel_t_m <= {dma_waddr_rel_t_m[1:0], adc_waddr_rel_t};
+    dma_end_of_capture_m <= {dma_end_of_capture_m[1:0], adc_end_of_capture_s};
   end
 
   always @(posedge dma_clk) begin
@@ -236,7 +253,7 @@ module util_adcfifo #(
   assign dma_rd_s = (dma_raddr < dma_waddr_rel_s) ? dma_wready_s : 1'b0;
 
   always @(posedge dma_clk) begin
-    if (dma_xfer_req == 1'b0) begin
+    if (dma_end_of_capture_m[2] == 1'b0) begin
       dma_rd <= 'd0;
       dma_rd_d <= 'd0;
       dma_rdata_d <= 'd0;
