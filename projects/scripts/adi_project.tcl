@@ -16,14 +16,6 @@ if {[info exists ::env(ADI_IGNORE_VERSION_CHECK)]} {
   set IGNORE_VERSION_CHECK 0
 }
 
-if {[info exists ::env(ADI_USE_OOC_SYNTHESIS)]} {
-  set ADI_USE_OOC_SYNTHESIS 1
-} elseif {![info exists ADI_USE_OOC_SYNTHESIS]} {
-  set ADI_USE_OOC_SYNTHESIS 0
-}
-
-set ADI_USE_INCR_COMP 1
-
 set p_board "not-applicable"
 set p_device "none"
 set sys_zynq 1
@@ -38,8 +30,6 @@ proc adi_project_xilinx {project_name {mode 0}} {
   global sys_zynq
   global REQUIRED_VIVADO_VERSION
   global IGNORE_VERSION_CHECK
-  global ADI_USE_OOC_SYNTHESIS
-  global ADI_USE_INCR_COMP
 
   if [regexp "_ac701$" $project_name] {
     set p_device "xc7a200tfbg676-2"
@@ -125,14 +115,6 @@ proc adi_project_xilinx {project_name {mode 0}} {
     lappend lib_dirs $ad_phdl_dir/library
   }
 
-  # Set a common IP cache for all projects
-  if {$ADI_USE_OOC_SYNTHESIS == 1} {
-    if {[file exists $ad_hdl_dir/ipcache] == 0} {
-      file mkdir $ad_hdl_dir/ipcache
-    }
-    config_ip_cache -import_from_project -use_cache_location $ad_hdl_dir/ipcache
-  }
-
   set_property ip_repo_paths $lib_dirs [current_fileset]
   update_ip_catalog
 
@@ -151,16 +133,8 @@ proc adi_project_xilinx {project_name {mode 0}} {
   save_bd_design
   validate_bd_design
 
-  if {$ADI_USE_OOC_SYNTHESIS == 1} {
-    set_property synth_checkpoint_mode Hierarchical [get_files  $project_system_dir/system.bd]
-  } else {
-    set_property synth_checkpoint_mode None [get_files  $project_system_dir/system.bd]
-  }
+  set_property synth_checkpoint_mode None [get_files  $project_system_dir/system.bd]
   generate_target {synthesis implementation} [get_files  $project_system_dir/system.bd]
-  if {$ADI_USE_OOC_SYNTHESIS == 1} {
-    export_ip_user_files -of_objects [get_files  $project_system_dir/system.bd] -no_script -sync -force -quiet
-    create_ip_run [get_files  $project_system_dir/system.bd]
-  }
   make_wrapper -files [get_files $project_system_dir/system.bd] -top
 
   if {$mode == 0} {
@@ -168,13 +142,6 @@ proc adi_project_xilinx {project_name {mode 0}} {
   } else {
     write_hwdef -file "$project_name.data/$project_name.hwdef"
   }
-
-  if {$ADI_USE_INCR_COMP == 1} {
-    if {[file exists ./reference.dcp]} {
-      set_property incremental_checkpoint ./reference.dcp [get_runs impl_1]
-    }
-  }
-
 }
 
 proc adi_project_files {project_name project_files} {
@@ -185,13 +152,8 @@ proc adi_project_files {project_name project_files} {
 
 proc adi_project_run {project_name} {
   global ADI_POWER_OPTIMIZATION
-  global ADI_USE_OOC_SYNTHESIS
 
-  if {$ADI_USE_OOC_SYNTHESIS == 1} {
-    launch_runs -jobs 4 system_*_synth_1 synth_1
-  } else {
-    launch_runs synth_1
-  }
+  launch_runs synth_1
   wait_on_run synth_1
   open_run synth_1
   report_timing_summary -file timing_synth.log
@@ -212,14 +174,19 @@ proc adi_project_run {project_name} {
 
   file mkdir $project_name.sdk
 
-  if [expr [get_property SLACK [get_timing_paths]] < 0] {
-    file copy -force $project_name.runs/impl_1/system_top.sysdef $project_name.sdk/system_top_bad_timing.hdf
-  } else {
+  set timing_paths_list [get_property -quiet SLACK [get_timing_paths -quiet]]
+  if {[llength $timing_paths_list] == 0} {
+    puts "no timing paths found"
     file copy -force $project_name.runs/impl_1/system_top.sysdef $project_name.sdk/system_top.hdf
-  }
-
-  if [expr [get_property SLACK [get_timing_paths]] < 0] {
-    return -code error [format "ERROR: Timing Constraints NOT met!"]
+  } else {
+    if [expr [get_property SLACK [get_timing_paths]] < 0] {
+      file copy -force $project_name.runs/impl_1/system_top.sysdef $project_name.sdk/system_top_bad_timing.hdf
+    } else {
+      file copy -force $project_name.runs/impl_1/system_top.sysdef $project_name.sdk/system_top.hdf
+    }
+    if [expr [get_property SLACK [get_timing_paths]] < 0] {
+      return -code error [format "ERROR: Timing Constraints NOT met!"]
+    }
   }
 }
 
